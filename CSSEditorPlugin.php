@@ -2,7 +2,7 @@
 /**
 * CSS Editor
 * @copyright  Copyright 2014 Roy Rosenzweig Center for History and New Media
-* @license   [description]http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+* @license    http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
 */
 
 /**
@@ -24,9 +24,29 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 		include 'config_form.php';
 	}
 
+	public function hookHtmlPurifierFormSubmission($args)
+	{
+
+	}
+
 	public function hookConfig($args)
 	{
-		set_option('css_editor_css', $_POST['css']);
+		require_once dirname(__FILE__) . '/libraries/CSSTidy/class.csstidy.php';
+
+		$config = HTMLPurifier_Config::createDefault();
+		$config->set('Filter.ExtractStyleBlocks', TRUE);
+		$config->set('CSS.AllowImportant', TRUE);
+		$config->set('CSS.AllowTricky', TRUE);
+		$config->set('CSS.Proprietary', TRUE);
+		$config->set('CSS.Trusted', TRUE);
+
+		$purifier = new HTMLPurifier($config);
+
+		$purifier->purify('<style>' . $_POST['css'] . '</style>');
+
+		$clean_css = $purifier->context->get('StyleBlocks')[0];
+
+		set_option('css_editor_css', $clean_css);
 	}
 
 	public function hookPublicHead($args) 
