@@ -13,47 +13,48 @@
 
 class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 {
-	protected $_hooks = array (
-		'public_head',
-		'config_form',
-		'config',
-		);
+    protected $_hooks = array (
+        'public_head',
+        'config_form',
+        'config',
+        );
 
-	public function hookConfigForm()
-	{
-		include 'config_form.php';
-	}
+    public function hookConfigForm()
+    {
+        include 'config_form.php';
+    }
 
-	public function hookHtmlPurifierFormSubmission($args)
-	{
+    public function hookHtmlPurifierFormSubmission($args)
+    {
 
-	}
+    }
 
-	public function hookConfig($args)
-	{
-		require_once dirname(__FILE__) . '/libraries/CSSTidy/class.csstidy.php';
+    public function hookConfig($args)
+    {
+        require_once dirname(__FILE__) . '/libraries/CSSTidy/class.csstidy.php';
 
-		$config = HTMLPurifier_Config::createDefault();
-		$config->set('Filter.ExtractStyleBlocks', TRUE);
-		$config->set('CSS.AllowImportant', TRUE);
-		$config->set('CSS.AllowTricky', TRUE);
-		$config->set('CSS.Proprietary', TRUE);
-		$config->set('CSS.Trusted', TRUE);
+        $config = HTMLPurifier_Config::createDefault();
+        $config->set('Filter.ExtractStyleBlocks', TRUE);
+        $config->set('CSS.AllowImportant', TRUE);
+        $config->set('CSS.AllowTricky', TRUE);
+        $config->set('CSS.Proprietary', TRUE);
+        $config->set('CSS.Trusted', TRUE);
 
-		$purifier = new HTMLPurifier($config);
+        $purifier = new HTMLPurifier($config);
 
-		$purifier->purify('<style>' . $_POST['css'] . '</style>');
+        $purifier->purify('<style>' . $_POST['css'] . '</style>');
 
-		$clean_css = $purifier->context->get('StyleBlocks')[0];
+        $clean_css = $purifier->context->get('StyleBlocks');
+        $clean_css = $clean_css[0];
 
-		set_option('css_editor_css', $clean_css);
-	}
+        set_option('css_editor_css', $clean_css);
+    }
 
-	public function hookPublicHead($args) 
-	{
-		$css = get_option('css_editor_css');
-		queue_css_string($css);
-	}
+    public function hookPublicHead($args) 
+    {
+        $css = get_option('css_editor_css');
+        queue_css_string($css);
+    }
 }
 
 
