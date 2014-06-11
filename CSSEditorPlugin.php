@@ -53,7 +53,9 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookPublicHead($args) 
     {
         $css = get_option('css_editor_css');
-        queue_css_string($css);
+        if ($css) {
+            queue_css_string($css);
+        }
     }
 }
 
