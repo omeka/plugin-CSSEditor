@@ -24,11 +24,6 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         include 'config_form.php';
     }
 
-    public function hookHtmlPurifierFormSubmission($args)
-    {
-
-    }
-
     public function hookConfig($args)
     {
         require_once dirname(__FILE__) . '/libraries/CSSTidy/class.csstidy.php';
