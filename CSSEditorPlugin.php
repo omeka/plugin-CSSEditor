@@ -26,6 +26,10 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookConfig($args)
     {
+        // Require the HTMLPurifier autoloader in case we haven't loaded it
+        // elsewhere yet
+        require_once 'htmlpurifier/HTMLPurifier.auto.php';
+
         require_once dirname(__FILE__) . '/libraries/CSSTidy/class.csstidy.php';
 
         $config = HTMLPurifier_Config::createDefault();
@@ -53,6 +57,3 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         }
     }
 }
-
-
- ?>
