@@ -17,7 +17,20 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         'public_head',
         'config_form',
         'config',
-        );
+        'install',
+        'uninstall',
+    );
+
+    public function hookInstall()
+    {
+        set_option('css_editor_filter', TRUE);
+    }
+
+    public function hookUninstall()
+    {
+        delete_option('css_editor_filter');
+        delete_option('css_editor_css');
+    }
 
     public function hookConfigForm()
     {
@@ -26,6 +39,32 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookConfig($args)
     {
+        $filter = $_POST['filter'];
+        set_option('css_editor_filter', $filter);
+
+        $css = $_POST['css'];
+
+        if( $filter ) {
+            $css = $this->filterCSS($css);
+        }
+        
+        set_option('css_editor_css', $css);
+    }
+
+    public function hookPublicHead($args) 
+    {
+        $css = get_option('css_editor_css');
+        if ($css) {
+            queue_css_string($css);
+        }
+    }
+
+    /**
+     * Given a CSS string, run that CSS through HTMLPurifier and return the result. 
+     *
+     *  @param string $css CSS code to purify.
+     **/
+    protected function filterCSS($css) {
         // Require the HTMLPurifier autoloader in case we haven't loaded it
         // elsewhere yet
         require_once 'htmlpurifier/HTMLPurifier.auto.php';
@@ -44,16 +83,6 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         $purifier->purify('<style>' . $_POST['css'] . '</style>');
 
         $clean_css = $purifier->context->get('StyleBlocks');
-        $clean_css = $clean_css[0];
-
-        set_option('css_editor_css', $clean_css);
-    }
-
-    public function hookPublicHead($args) 
-    {
-        $css = get_option('css_editor_css');
-        if ($css) {
-            queue_css_string($css);
-        }
+        return $clean_css[0];
     }
 }
