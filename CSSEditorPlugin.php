@@ -38,6 +38,33 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         $config->set('CSS.AllowTricky', TRUE);
         $config->set('CSS.Proprietary', TRUE);
         $config->set('CSS.Trusted', TRUE);
+        $config->set('HTML.DefinitionID', 'html5-definitions'); // unqiue id
+        $config->set('HTML.DefinitionRev', 1);
+
+        if ($def = $config->maybeGetRawHTMLDefinition())
+        {
+        $def->addElement('body', 'Block', 'Flow', 'Common');
+        $def->addElement('section', 'Block', 'Flow', 'Common');
+        $def->addElement('nav',     'Block', 'Flow', 'Common');
+        $def->addElement('article', 'Block', 'Flow', 'Common');
+        $def->addElement('aside',   'Block', 'Flow', 'Common');
+        $def->addElement('header',  'Block', 'Flow', 'Common');
+        $def->addElement('footer',  'Block', 'Flow', 'Common');
+        $def->addElement('address', 'Block', 'Flow', 'Common');
+        $def->addElement('hgroup', 'Block', 'Required: h1 | h2 | h3 | h4 | h5 | h6', 'Common');
+        $def->addElement('figure', 'Block', 'Optional: (figcaption, Flow) | (Flow, figcaption) | Flow', 'Common');
+        $def->addElement('figcaption', 'Inline', 'Flow', 'Common');
+        $def->addElement('video', 'Block', 'Optional: (source, Flow) | (Flow, source) | Flow', 'Common');
+        $def->addElement('source', 'Block', 'Flow', 'Common');
+        $def->addElement('s',    'Inline', 'Inline', 'Common');
+        $def->addElement('var',  'Inline', 'Inline', 'Common');
+        $def->addElement('sub',  'Inline', 'Inline', 'Common');
+        $def->addElement('sup',  'Inline', 'Inline', 'Common');
+        $def->addElement('mark', 'Inline', 'Inline', 'Common');
+        $def->addElement('wbr',  'Inline', 'Empty', 'Core');
+        $def->addElement('ins', 'Block', 'Flow', 'Common');
+        $def->addElement('del', 'Block', 'Flow', 'Common');
+        }
 
         $purifier = new HTMLPurifier($config);
 
