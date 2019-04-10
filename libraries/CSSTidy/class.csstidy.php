@@ -33,42 +33,48 @@
  */
 
 /**
- * Defines ctype functions if required
- * @todo make them methods of csstidy class
- * @version 1.0
+ * Defines ctype functions if required.
+ *
+ * @TODO: Make these methods of CSSTidy.
+ * @since 1.0.0
  */
-if (!function_exists('ctype_space')) {
-	/* ctype_space  Check for whitespace character(s) */
-	function ctype_space($text) {
-		return!preg_match("/[^\s\r\n\t\f]/", $text);
+if (!function_exists('ctype_space')){
+	/* ctype_space Check for whitespace character(s) */
+	function ctype_space($text){
+		return (1===preg_match("/^[ \r\n\t\f]+$/", $text));
 	}
-
 }
-if (!function_exists('ctype_alpha')) {
-	/* ctype_alpha  Check for alphabetic character(s) */
-	function ctype_alpha($text) {
-		return preg_match("/[a-zA-Z]/", $text);
+if (!function_exists('ctype_alpha')){
+	/* ctype_alpha Check for alphabetic character(s) */
+	function ctype_alpha($text){
+		return (1===preg_match('/^[a-zA-Z]+$/', $text));
 	}
-
+}
+if (!function_exists('ctype_xdigit')){
+	/* ctype_xdigit Check for HEX character(s) */
+	function ctype_xdigit($text){
+		return (1===preg_match('/^[a-fA-F0-9]+$/', $text));
+	}
 }
 
 /**
  * Defines constants
  * @todo //TODO: make them class constants of csstidy
  */
-define('AT_START',    1);
-define('AT_END',      2);
-define('SEL_START',   3);
-define('SEL_END',     4);
-define('PROPERTY',    5);
-define('VALUE',       6);
-define('COMMENT',     7);
-define('DEFAULT_AT', 41);
+define('AT_START',         1);
+define('AT_END',           2);
+define('SEL_START',        3);
+define('SEL_END',          4);
+define('PROPERTY',         5);
+define('VALUE',            6);
+define('COMMENT',          7);
+define('IMPORTANT_COMMENT',8);
+define('DEFAULT_AT',      41);
 
 /**
  * Contains a class for printing CSS code
  *
- * @version 1.0
+ * @version 1.1.0
  */
 require('class.csstidy_print.php');
 
@@ -89,7 +95,7 @@ require('class.csstidy_optimise.php');
  * An online version should be available here: http://cdburnerxp.se/cssparse/css_optimiser.php
  * @package csstidy
  * @author Florian Schmitz (floele at gmail dot com) 2005-2006
- * @version 1.5.2
+ * @version 1.6.5
  */
 class csstidy {
 
@@ -142,7 +148,7 @@ class csstidy {
 	 * @var string
 	 * @access private
 	 */
-	public $version = '1.5.2';
+	public $version = '1.6.5';
 	/**
 	 * Stores the settings
 	 * @var array
@@ -297,6 +303,7 @@ class csstidy {
 		 */
 		$this->settings['optimise_shorthands'] = 1;
 		$this->settings['remove_last_;'] = true;
+		$this->settings['space_before_important'] = false;
 		/* rewrite all properties with low case, better for later gzip OK, safe*/
 		$this->settings['case_properties'] = 1;
 		/* sort properties in alpabetic order, better for later gzip
@@ -312,6 +319,10 @@ class csstidy {
 		/* is dangeroues to be used: CSS is broken sometimes */
 		$this->settings['merge_selectors'] = 0;
 		/* preserve or not browser hacks */
+
+		/* Useful to produce a rtl css from a ltr one (or the opposite) */
+		$this->settings['reverse_left_and_right'] = 0;
+
 		$this->settings['discard_invalid_selectors'] = false;
 		$this->settings['discard_invalid_properties'] = false;
 		$this->settings['css_level'] = 'CSS3.0';
@@ -405,7 +416,7 @@ class csstidy {
 	 */
 	public function _add_token($type, $data, $do = false) {
 		if ($this->get_cfg('preserve_css') || $do) {
-			$this->tokens[] = array($type, ($type == COMMENT) ? $data : trim($data));
+			$this->tokens[] = array($type, ($type == COMMENT or $type == IMPORTANT_COMMENT) ? $data : trim($data));
 		}
 	}
 
@@ -616,7 +627,7 @@ class csstidy {
 							$this->at .= $this->_unicode($string, $i);
 						}
 						// fix for complicated media, i.e @media screen and (-webkit-min-device-pixel-ratio:1.5)
-						elseif (in_array($string{$i}, array('(', ')', ':', '.'))) {
+						elseif (in_array($string{$i}, array('(', ')', ':', '.', '/'))) {
 							$this->at .= $string{$i};
 						}
 					} else {
@@ -694,8 +705,8 @@ class csstidy {
 							$this->sel_separate[] = strlen($this->selector);
 						} elseif ($string{$i} === '\\') {
 							$this->selector .= $this->_unicode($string, $i);
-						} elseif ($string{$i} === '*' && @in_array($string{$i + 1}, array('.', '#', '[', ':'))) {
-							// remove unnecessary universal selector, FS#147
+						} elseif ($string{$i} === '*' && @in_array($string{$i + 1}, array('.', '#', '[', ':')) && ($i==0 OR $string{$i - 1}!=='/')) {
+							// remove unnecessary universal selector, FS#147, but not comment in selector
 						} else {
 							$this->selector .= $string{$i};
 						}
@@ -877,7 +888,7 @@ class csstidy {
 						$this->str_char[] = $string{$i} === '(' ? ')' : $string{$i};
 						$this->from[] = 'instr';
 						$this->quoted_string[] = ($_str_char === ')' && $string{$i} !== '(' && trim($_cur_string)==='(')?$_quoted_string:!($string{$i} === '(');
-						continue;
+						continue 2;
 					}
 
 					if ($_str_char !== ")" && ($string{$i} === "\n" || $string{$i} === "\r") && !($string{$i - 1} === '\\' && !$this->escaped($string, $i - 1))) {
@@ -941,7 +952,13 @@ class csstidy {
 					if ($string{$i} === '*' && $string{$i + 1} === '/') {
 						$this->status = array_pop($this->from);
 						$i++;
-						$this->_add_token(COMMENT, $cur_comment);
+						if (strlen($cur_comment) > 1 and strncmp($cur_comment, '!', 1) === 0) {
+							$this->_add_token(IMPORTANT_COMMENT, $cur_comment);
+							$this->css_add_important_comment($cur_comment);
+						}
+						else {
+							$this->_add_token(COMMENT, $cur_comment);
+						}
 						$cur_comment = '';
 					} else {
 						$cur_comment .= $string{$i};
@@ -1030,6 +1047,25 @@ class csstidy {
 		return!(@($string{$pos - 1} !== '\\') || csstidy::escaped($string, $pos - 1));
 	}
 
+
+	/**
+	 * Add an important comment to the css code
+	 * (one we want to keep)
+	 * @param $comment
+	 */
+	public function css_add_important_comment($comment) {
+		if ($this->get_cfg('preserve_css') || trim($comment) == '') {
+			return;
+		}
+		if (!isset($this->css['!'])) {
+			$this->css['!'] = '';
+		}
+		else {
+			$this->css['!'] .= "\n";
+		}
+		$this->css['!'] .= $comment;
+	}
+
 	/**
 	 * Adds a property with value to the existing CSS code
 	 * @param string $media
@@ -1074,7 +1110,7 @@ class csstidy {
 			return $media;
 		}
 		end($this->css);
-		list($at,) = each($this->css);
+		$at = key($this->css);
 		if ($at == $media) {
 			return $media;
 		}
@@ -1113,7 +1149,7 @@ class csstidy {
 
 			// if last is the same, keep it
 			end($this->css[$media]);
-			list($sel,) = each($this->css[$media]);
+			$sel = key($this->css[$media]);
 			if ($sel == $selector) {
 				return $selector;
 			}

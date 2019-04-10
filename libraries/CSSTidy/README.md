@@ -1,15 +1,22 @@
-CSSTidy
----
+# CSSTidy [![Build Status](https://travis-ci.org/Cerdic/CSSTidy.svg?branch=master)](https://travis-ci.org/Cerdic/CSSTidy)
 
 CSSTidy is a CSS minifier 
 
-v1.5.2
+* v1.6.5 :
+  fix warnings with PHP 7.3
+* v1.6.4 :
+  preserve important comments (starting with !) in the minification /*! Credits/Licence */
+* v1.6.3 :
+  border-radius shorthands optimisation, reverse_left_and_right option
+* v1.5.7 :
+  PHP 7 compatibility, composer update, Travis CI integration
+* v1.5.6 :
+  fixes minor bugs, mainly on CSS3 properties/units
+* v1.5.2 :
   is PHP 5.4+ compliant, removes use of GLOBALS, fixes some bugs, integrates CSS3 units
   and now available on https://packagist.org/packages/cerdic/css-tidy
-
-v1.4 is the new version coming from master branch (corresponds to the initial trunk of svn repository) after beeing stabilized
-
-v1.3 branch corresponds to the last stable relase published by the author.
+* v1.4 : is the new version coming from master branch (corresponds to the initial trunk of svn repository) after beeing stabilized
+* v1.3 branch corresponds to the last stable relase published by the author.<br/>
 It integrates some bugfixes and a 1.3.1 version has been taged
 Since the original project (http://csstidy.sourceforge.net/index.php) has been suspended
 here is the import of https://csstidy.svn.sourceforge.net/svnroot/csstidy on 2010-11-14
@@ -18,7 +25,7 @@ Only PHP version is here maintained
 
 ---
 
-CSSTidy
+## CSSTidy
 
 Original Tracker : 
 http://sourceforge.net/tracker/?group_id=148404&atid=771415
