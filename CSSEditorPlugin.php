@@ -64,6 +64,7 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         $def->addElement('wbr',  'Inline', 'Empty', 'Core');
         $def->addElement('ins', 'Block', 'Flow', 'Common');
         $def->addElement('del', 'Block', 'Flow', 'Common');
+        $def->addElement('input', 'Block', 'Flow', 'Common');
         }
 
         $purifier = new HTMLPurifier($config);
