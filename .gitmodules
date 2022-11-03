@@ -1,0 +1,3 @@
+[submodule "libraries/CSSTidy"]
+	path = libraries/CSSTidy
+	url = https://github.com/Cerdic/CSSTidy
