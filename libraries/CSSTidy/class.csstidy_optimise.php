@@ -47,6 +47,12 @@ class csstidy_optimise {
 	 * @var object
 	 */
 	public $parser;
+	public $css;
+	public $sub_value;
+	public $at;
+	public $selector;
+	public $property;
+	public $value;
 
 	/**
 	 * Constructor
@@ -358,8 +364,8 @@ class csstidy_optimise {
 		// #aabbcc -> #abc
 		if (strlen($color) == 7) {
 			$color_temp = strtolower($color);
-			if ($color_temp{0} === '#' && $color_temp{1} == $color_temp{2} && $color_temp{3} == $color_temp{4} && $color_temp{5} == $color_temp{6}) {
-				$color = '#' . $color{1} . $color{3} . $color{5};
+			if ($color_temp[0] === '#' && $color_temp[1] == $color_temp[2] && $color_temp[3] == $color_temp[4] && $color_temp[5] == $color_temp[6]) {
+				$color = '#' . $color[1] . $color[3] . $color[5];
 			}
 		}
 
@@ -420,9 +426,9 @@ class csstidy_optimise {
 				if ($number[1] == '' && in_array($this->property, $unit_values, true)) {
 					$number[1] = 'px';
 				}
-                        } elseif ($number[1] != 's' && $number[1] != 'ms') {
-                                $number[1] = '';
-                        }
+			} elseif ($number[1] != 's' && $number[1] != 'ms') {
+				$number[1] = '';
+			}
 
 			$temp[$l] = $number[0] . $number[1];
 		}
@@ -438,7 +444,7 @@ class csstidy_optimise {
 	 */
 	public function AnalyseCssNumber($string) {
 		// most simple checks first
-		if (strlen($string) == 0 || ctype_alpha($string{0})) {
+		if (strlen($string) == 0 || ctype_alpha($string[0])) {
 			return false;
 		}
 
@@ -647,22 +653,22 @@ class csstidy_optimise {
 		for ($i = 0, $len = strlen($string); $i < $len; $i++) {
 			switch ($status) {
 				case 'st':
-					if ($string{$i} == $sep && !$this->parser->escaped($string, $i)) {
+					if ($string[$i] == $sep && !$this->parser->escaped($string, $i)) {
 						++$num;
-					} elseif ($string{$i} === '"' || $string{$i} === '\'' || (!$explode_in_parenthesis && $string{$i} === '(') && !$this->parser->escaped($string, $i)) {
+					} elseif ($string[$i] === '"' || $string[$i] === '\'' || (!$explode_in_parenthesis && $string[$i] === '(') && !$this->parser->escaped($string, $i)) {
 						$status = 'str';
-						$to = ($string{$i} === '(') ? ')' : $string{$i};
-						(isset($output[$num])) ? $output[$num] .= $string{$i} : $output[$num] = $string{$i};
+						$to = ($string[$i] === '(') ? ')' : $string[$i];
+						(isset($output[$num])) ? $output[$num] .= $string[$i] : $output[$num] = $string[$i];
 					} else {
-						(isset($output[$num])) ? $output[$num] .= $string{$i} : $output[$num] = $string{$i};
+						(isset($output[$num])) ? $output[$num] .= $string[$i] : $output[$num] = $string[$i];
 					}
 					break;
 
 				case 'str':
-					if ($string{$i} == $to && !$this->parser->escaped($string, $i)) {
+					if ($string[$i] == $to && !$this->parser->escaped($string, $i)) {
 						$status = 'st';
 					}
-					(isset($output[$num])) ? $output[$num] .= $string{$i} : $output[$num] = $string{$i};
+					(isset($output[$num])) ? $output[$num] .= $string[$i] : $output[$num] = $string[$i];
 					break;
 			}
 		}
@@ -797,9 +803,9 @@ class csstidy_optimise {
 					$have['clip'] = true;
 				} elseif (in_array($str_value[$i][$j], $origin, true)) {
 					$return['background-origin'] .= $str_value[$i][$j] . ',';
-				} elseif ($str_value[$i][$j]{0} === '(') {
+				} elseif ($str_value[$i][$j][0] === '(') {
 					$return['background-size'] .= substr($str_value[$i][$j], 1, -1) . ',';
-				} elseif (in_array($str_value[$i][$j], $pos, true) || is_numeric($str_value[$i][$j]{0}) || $str_value[$i][$j]{0} === null || $str_value[$i][$j]{0} === '-' || $str_value[$i][$j]{0} === '.') {
+				} elseif (in_array($str_value[$i][$j], $pos, true) || is_numeric($str_value[$i][$j][0]) || $str_value[$i][$j][0] === null || $str_value[$i][$j][0] === '-' || $str_value[$i][$j][0] === '.') {
 					$return['background-position'] .= $str_value[$i][$j];
 					if (!$have['pos'])
 						$return['background-position'] .= ' '; else
@@ -945,7 +951,7 @@ class csstidy_optimise {
 			} elseif ($have['style'] === false && in_array($str_value[0][$j], $font_style)) {
 				$return['font-style'] = $str_value[0][$j];
 				$have['style'] = true;
-			} elseif ($have['size'] === false && (is_numeric($str_value[0][$j]{0}) || $str_value[0][$j]{0} === null || $str_value[0][$j]{0} === '.')) {
+			} elseif ($have['size'] === false && (is_numeric($str_value[0][$j][0]) || $str_value[0][$j][0] === null || $str_value[0][$j][0] === '.')) {
 				$size = $this->explode_ws('/', trim($str_value[0][$j]));
 				$return['font-size'] = $size[0];
 				if (isset($size[1])) {
@@ -975,7 +981,7 @@ class csstidy_optimise {
 
 		// Fix for 100 and more font-size
 		if ($have['size'] === false && isset($return['font-weight']) &&
-						is_numeric($return['font-weight']{0})) {
+						is_numeric($return['font-weight'][0])) {
 			$return['font-size'] = $return['font-weight'];
 			unset($return['font-weight']);
 		}
@@ -1011,8 +1017,8 @@ class csstidy_optimise {
 					$family = trim($family);
 					$len = strlen($family);
 					if (strpos($family, ' ') &&
-									!(($family{0} === '"' && $family{$len - 1} === '"') ||
-									($family{0} === "'" && $family{$len - 1} === "'"))) {
+									!(($family[0] === '"' && $family[$len - 1] === '"') ||
+									($family[0] === "'" && $family[$len - 1] === "'"))) {
 						$family = '"' . $family . '"';
 					}
 					$result_families[] = $family;
@@ -1278,16 +1284,25 @@ class csstidy_optimise {
 		if (stripos($value, 'left') === false and stripos($value, 'right') === false) {
 			$values = $this->explode_ws(' ', trim($value));
 			$values = array_map('trim', $values);
-			$values = array_filter($values);
+			$values = array_filter($values, function ($v) { return strlen($v);});
 			$values = array_values($values);
 			if (count($values) == 1) {
+				if (in_array($value, array('center', 'top', 'bottom', 'inherit', 'initial', 'unset'))) {
+					return $value;
+				}
 				return "left $value";
 			}
 			if ($values[1] == 'top' or $values[1] == 'bottom') {
+				if ($values[0] === 'center') {
+					return $value;
+				}
 				return 'left ' . implode(' ', $values);
 			}
 			else {
 				$last = array_pop($values);
+				if ($last === 'center') {
+					return $value;
+				}
 				return implode(' ', $values) . ' left ' . $last;
 			}
 		}

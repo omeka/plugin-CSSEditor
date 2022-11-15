@@ -28,10 +28,18 @@
         ]
     },
     "require": {
-
+        "php": "^7.1 || ^8"
     },
     "require-dev": {
         "pear/text_diff": "^1.2",
-        "simpletest/simpletest": "^1.1"
+        "simpletest/simpletest": "dev-master"
+    },
+    "bin": ["bin/pcsstidy"],
+    "archive": {
+        "exclude": [
+            "/.gitignore",
+            "/.travis.yml",
+            "/testing"
+        ]
     }
 }
