@@ -34,6 +34,7 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 
         $config = HTMLPurifier_Config::createDefault();
         $config->set('Filter.ExtractStyleBlocks', TRUE);
+        $config->set('Filter.ExtractStyleBlocks.Escaping', false);
         $config->set('CSS.AllowImportant', TRUE);
         $config->set('CSS.AllowTricky', TRUE);
         $config->set('CSS.Proprietary', TRUE);
@@ -81,6 +82,14 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $css = get_option('css_editor_css');
         if ($css) {
+            // HTML Purifier's escaping code (minus the >).
+            // Do it here to avoid round-trip issues with the form entry,
+            // and omit > to allow child selector usage
+            $css = str_replace(
+                array('<', '&'),
+                array('\3C ', '\26 '),
+                $css
+            );
             queue_css_string($css);
         }
     }
