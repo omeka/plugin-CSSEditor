@@ -32,9 +32,14 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 
         require_once dirname(__FILE__) . '/libraries/CSSTidy/class.csstidy.php';
 
+        $tidy = new csstidy();
+        $tidy->set_cfg('lowercase_s', false);
+        $tidy->set_cfg('remove_last_;', false);
+
         $config = HTMLPurifier_Config::createDefault();
         $config->set('Filter.ExtractStyleBlocks', TRUE);
         $config->set('Filter.ExtractStyleBlocks.Escaping', false);
+        $config->set('Filter.ExtractStyleBlocks.TidyImpl', $tidy);
         $config->set('CSS.AllowImportant', TRUE);
         $config->set('CSS.AllowTricky', TRUE);
         $config->set('CSS.Proprietary', TRUE);
