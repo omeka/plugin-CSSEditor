@@ -41,6 +41,7 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         $config->set('CSS.Trusted', TRUE);
         $config->set('HTML.DefinitionID', 'html5-definitions'); // unqiue id
         $config->set('HTML.DefinitionRev', 1);
+        $config->set('Cache.DefinitionImpl', null);
 
         if ($def = $config->maybeGetRawHTMLDefinition())
         {
