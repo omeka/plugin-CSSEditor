@@ -32,58 +32,16 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 
         require_once dirname(__FILE__) . '/libraries/CSSTidy/class.csstidy.php';
 
-        $tidy = new csstidy();
-        $tidy->set_cfg('lowercase_s', false);
-        $tidy->set_cfg('remove_last_;', false);
-
         $config = HTMLPurifier_Config::createDefault();
-        $config->set('Filter.ExtractStyleBlocks', TRUE);
-        $config->set('Filter.ExtractStyleBlocks.Escaping', false);
-        $config->set('Filter.ExtractStyleBlocks.TidyImpl', $tidy);
         $config->set('CSS.AllowImportant', TRUE);
         $config->set('CSS.AllowTricky', TRUE);
         $config->set('CSS.Proprietary', TRUE);
         $config->set('CSS.Trusted', TRUE);
-        $config->set('HTML.DefinitionID', 'html5-definitions'); // unqiue id
-        $config->set('HTML.DefinitionRev', 1);
         $config->set('Cache.DefinitionImpl', null);
 
-        if ($def = $config->maybeGetRawHTMLDefinition())
-        {
-        $def->addElement('body', 'Block', 'Flow', 'Common');
-        $def->addElement('section', 'Block', 'Flow', 'Common');
-        $def->addElement('nav',     'Block', 'Flow', 'Common');
-        $def->addElement('article', 'Block', 'Flow', 'Common');
-        $def->addElement('aside',   'Block', 'Flow', 'Common');
-        $def->addElement('header',  'Block', 'Flow', 'Common');
-        $def->addElement('footer',  'Block', 'Flow', 'Common');
-        $def->addElement('address', 'Block', 'Flow', 'Common');
-        $def->addElement('hgroup', 'Block', 'Required: h1 | h2 | h3 | h4 | h5 | h6', 'Common');
-        $def->addElement('figure', 'Block', 'Optional: (figcaption, Flow) | (Flow, figcaption) | Flow', 'Common');
-        $def->addElement('figcaption', 'Inline', 'Flow', 'Common');
-        $def->addElement('video', 'Block', 'Optional: (source, Flow) | (Flow, source) | Flow', 'Common');
-        $def->addElement('source', 'Block', 'Flow', 'Common');
-        $def->addElement('s',    'Inline', 'Inline', 'Common');
-        $def->addElement('var',  'Inline', 'Inline', 'Common');
-        $def->addElement('sub',  'Inline', 'Inline', 'Common');
-        $def->addElement('sup',  'Inline', 'Inline', 'Common');
-        $def->addElement('mark', 'Inline', 'Inline', 'Common');
-        $def->addElement('wbr',  'Inline', 'Empty', 'Core');
-        $def->addElement('ins', 'Block', 'Flow', 'Common');
-        $def->addElement('del', 'Block', 'Flow', 'Common');
-        $def->addElement('input', 'Block', 'Flow', 'Common');
-        $def->addElement('button', 'Block', 'Flow', 'Common');
-        $def->addElement('input[type=submit]', 'Block', 'Flow', 'Common');
-        $def->addElement('input[type=\'submit\']', 'Block', 'Flow', 'Common');
-        $def->addElement('input[type="submit"]', 'Block', 'Flow', 'Common');
-        }
-
-        $purifier = new HTMLPurifier($config);
-
-        $purifier->purify('<style>' . $_POST['css'] . '</style>');
-
-        $clean_css = $purifier->context->get('StyleBlocks');
-        $clean_css = $clean_css[0];
+        $filter = new CSSEditor_Filter_ExtractStyleBlocks;
+        $context = new HTMLPurifier_Context; // unused but required by signature
+        $clean_css = $filter->cleanCss($_POST['css'], $config, $context);
 
         set_option('css_editor_css', $clean_css);
     }
