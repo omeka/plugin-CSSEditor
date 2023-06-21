@@ -145,6 +145,8 @@ class CSSEditor_Filter_ExtractStyleBlocks extends HTMLPurifier_Filter
         'source',
         'mark',
         'wbr',
+        // added object
+        'object',
     );
 
     private $pseudos = array(
