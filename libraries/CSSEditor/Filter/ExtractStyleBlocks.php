@@ -161,6 +161,13 @@ class CSSEditor_Filter_ExtractStyleBlocks extends HTMLPurifier_Filter
         'first-line',
     );
 
+    private $universal_values = array(
+        'initial',
+        'inherit',
+        'unset',
+        'revert',
+    );
+
     public function __construct()
     {
         $this->_tidy = new csstidy();
@@ -203,6 +210,7 @@ class CSSEditor_Filter_ExtractStyleBlocks extends HTMLPurifier_Filter
         restore_error_handler();
         $css_definition = $config->getDefinition('CSS');
         $allowed_elements = array_flip($this->elements);
+        $universal_values = array_flip($this->universal_values);
         $new_css = array();
         foreach ($this->_tidy->css as $k => $decls) {
             // $decls are all CSS declarations inside an @ selector
@@ -365,6 +373,10 @@ class CSSEditor_Filter_ExtractStyleBlocks extends HTMLPurifier_Filter
                 foreach ($style as $name => $value) {
                     if (!isset($css_definition->info[$name])) {
                         unset($style[$name]);
+                        continue;
+                    }
+                    if (isset($universal_values[$lower_val = strtolower($value)])) {
+                        $style[$name] = $lower_val;
                         continue;
                     }
                     $def = $css_definition->info[$name];
