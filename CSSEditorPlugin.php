@@ -13,7 +13,7 @@
 
 class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 {
-    const ALLOWED_FONT_REGEX = '#^https?://(?:fonts\.googleapis\.com|use\.typekit\.com)/#i';
+    const ALLOWED_FONT_REGEX = '#^https?://(?:fonts\.googleapis\.com|use\.typekit\.net)/#i';
 
     protected $_hooks = array (
         'public_head',
