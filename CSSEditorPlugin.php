@@ -13,6 +13,8 @@
 
 class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 {
+    const ALLOWED_FONT_REGEX = '#^https?://(?:fonts\.googleapis\.com|use\.typekit\.com)/#i';
+
     protected $_hooks = array (
         'public_head',
         'config_form',
@@ -21,6 +23,8 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookConfigForm()
     {
+        $fontStylesheets = json_decode((string) get_option('css_editor_font_stylesheets'));
+        $fontStylesheetsText = is_array($fontStylesheets) ? implode("\n", $fontStylesheets) : '';
         include 'config_form.php';
     }
 
@@ -44,10 +48,26 @@ class CSSEditorPlugin extends Omeka_Plugin_AbstractPlugin
         $clean_css = $filter->cleanCss($_POST['css'], $config, $context);
 
         set_option('css_editor_css', $clean_css);
+
+        $fontStylesheets = array();
+        $fontStylesheetLines = explode("\n", $_POST['font_stylesheets']);
+        foreach ($fontStylesheetLines as $line) {
+            $line = trim($line);
+            if (preg_match(self::ALLOWED_FONT_REGEX, $line)) {
+                $fontStylesheets[] = $line;
+            }
+        }
+        set_option('css_editor_font_stylesheets', json_encode($fontStylesheets));
     }
 
     public function hookPublicHead($args) 
     {
+        $fontStylesheets = json_decode((string) get_option('css_editor_font_stylesheets'));
+        if (is_array($fontStylesheets)) {
+            foreach ($fontStylesheets as $fontStylesheet) {
+                queue_css_url($fontStylesheet);
+            }
+        }
         $css = get_option('css_editor_css');
         if ($css) {
             // HTML Purifier's escaping code (minus the >).
